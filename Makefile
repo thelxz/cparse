@@ -5,7 +5,7 @@ OBJ = $(SRC:.cpp=.o)
 
 LD ?= ld
 CXX ?= g++
-CFLAGS = -std=c++11 -Wall -pedantic -Wmissing-field-initializers -Wuninitialized
+CFLAGS = -std=c++11 -Wall -pedantic
 DEBUG = -g #-DDEBUG
 
 all: $(EXE) release

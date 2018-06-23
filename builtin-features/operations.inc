@@ -129,46 +129,54 @@ packToken UnaryNumeralOperation(const packToken& left, const packToken& right, e
 }
 
 packToken NumeralOperation(const packToken& left, const packToken& right, evaluationData* data) {
-  double left_d, right_d;
+//  double left_d, right_d;
   int64_t left_i, right_i;
 
   // Extract integer and real values of the operators:
-  left_d = left.asDouble();
+//  left_d = left.asDouble();
   left_i = left.asInt();
 
-  right_d = right.asDouble();
+//  right_d = right.asDouble();
   right_i = right.asInt();
 
   const std::string& op = data->op;
-
+// edited by lxz
   if (op == "+") {
-    return left_d + right_d;
+    return left_i + right_i;
   } else if (op == "*") {
-    return left_d * right_d;
+    return left_i * right_i;
   } else if (op == "-") {
-    return left_d - right_d;
+    return left_i - right_i;
   } else if (op == "/") {
-    return left_d / right_d;
+    return left_i / right_i;
   } else if (op == "<<") {
     return left_i << right_i;
   } else if (op == "**") {
-    return pow(left_d, right_d);
+    return pow(left_i, right_i);
   } else if (op == ">>") {
     return left_i >> right_i;
   } else if (op == "%") {
     return left_i % right_i;
   } else if (op == "<") {
-    return left_d < right_d;
+    return left_i < right_i;
   } else if (op == ">") {
-    return left_d > right_d;
+    return left_i > right_i;
   } else if (op == "<=") {
-    return left_d <= right_d;
+    return left_i <= right_i;
   } else if (op == ">=") {
-    return left_d >= right_d;
+    return left_i >= right_i;
   } else if (op == "&&") {
     return left_i && right_i;
   } else if (op == "||") {
     return left_i || right_i;
+// add by lxz
+  } else if (op == "&") {
+    return left_i & right_i;
+  } else if (op == "|") {
+    return left_i | right_i;
+  } else if (op == "^") {
+    return left_i ^ right_i;
+// lxz add end
   } else {
     throw undefined_operation(op, left, right);
   }
@@ -336,6 +344,9 @@ struct Startup {
     opp.add("<<", 7); opp.add(">>", 7);
     opp.add("<",  8); opp.add("<=", 8); opp.add(">=", 8); opp.add(">", 8);
     opp.add("==", 9); opp.add("!=", 9);
+    opp.add("&", 10);
+    opp.add("^", 11);
+    opp.add("|", 12);
     opp.add("&&", 13);
     opp.add("||", 14);
     opp.add("=", 15); opp.add(":", 15);

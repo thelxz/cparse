@@ -105,6 +105,7 @@ bool packToken::asBool() const {
 double packToken::asDouble() const {
   switch (base->type) {
   case REAL:
+    std::cout << "NOTICE: a double number!!! at asDouble()" << std::endl;
     return static_cast<Token<double>*>(base)->val;
   case INT:
     return static_cast<Token<int64_t>*>(base)->val;
@@ -124,6 +125,7 @@ double packToken::asDouble() const {
 int64_t packToken::asInt() const {
   switch (base->type) {
   case REAL:
+    std::cout << "NOTICE: a double number!!! at asInt()" << std::endl;
     return static_cast<Token<double>*>(base)->val;
   case INT:
     return static_cast<Token<int64_t>*>(base)->val;

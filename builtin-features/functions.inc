@@ -2,6 +2,7 @@
 
 namespace builtin_functions {
 
+
 /* * * * * Built-in Functions: * * * * */
 
 packToken default_print(TokenMap scope) {
@@ -159,6 +160,7 @@ packToken default_pow(TokenMap scope) {
 
   return pow(number, exp);
 }
+
 
 /* * * * * default constructor functions * * * * */
 

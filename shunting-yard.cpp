@@ -45,7 +45,7 @@ TokenBase* exec_operation(const packToken& left, const packToken& right,
     if (match_op_id(data->opID, operation.getMask())) {
       try {
         return operation.exec(left, right, data).release();
-      } catch (const Operation::Reject& e) {
+      } catch (Operation::Reject e) {
         continue;
       }
     }
@@ -279,15 +279,18 @@ TokenQueue_t calculator::toRPN(const char* expr,
   while (*expr && (data.bracketLevel || !strchr(delim, *expr))) {
     if (isdigit(*expr)) {
       // If the token is a number, add it to the output queue.
-      int64_t _int = strtol(expr, &nextChar, 10);
+      int64_t _int;
+      _int = strtol(expr, &nextChar, 10);
 
       // If the number was not a float:
-      if (!strchr(".eE", *nextChar)) {
+//      if (!strchr(".eE", *nextChar)) {
         data.handle_token(new Token<int64_t>(_int, INT));
-      } else {
-        double digit = strtod(expr, &nextChar);
-        data.handle_token(new Token<double>(digit, REAL));
-      }
+//      } else {
+//        std::cout << * nextChar << std::endl;
+//        double digit = strtod(expr, &nextChar);
+//        data.handle_token(new Token<double>(digit, REAL));
+//        std::cout << "NOTICE: a double number!!!" << digit << expr << *nextChar<< std::endl;
+//      }
 
       expr = nextChar;
     } else if (rpnBuilder::isvarchar(*expr)) {
@@ -515,19 +518,19 @@ TokenBase* calculator::calculate(const TokenQueue_t& rpn, TokenMap scope,
       TokenBase* r_token = evaluation.top(); evaluation.pop();
       TokenBase* l_token = evaluation.top(); evaluation.pop();
 
-      if (r_token->type & REF) {
-        data.right.reset(static_cast<RefToken*>(r_token));
-        r_token = data.right->resolve(&data.scope);
-      } else if (r_token->type == VAR) {
-        packToken key = static_cast<Token<std::string>*>(r_token)->val;
-        data.right.reset(new RefToken(key));
+      if (r_token->type == VAR) {
+        std::string var_name = static_cast<Token<std::string>*>(r_token)->val;
+        delete r_token;
+        delete resolve_reference(l_token);
+        cleanStack(evaluation);
+        throw std::domain_error("Unable to find the variable '" + var_name + "'.");
       } else {
-        data.right.reset(new RefToken());
+        r_token = resolve_reference(r_token, &data.scope);
       }
 
       if (l_token->type & REF) {
         data.left.reset(static_cast<RefToken*>(l_token));
-        l_token = data.left->resolve(&data.scope);
+        l_token  = data.left->resolve(&data.scope);
       } else if (l_token->type == VAR) {
         packToken key = static_cast<Token<std::string>*>(l_token)->val;
         data.left.reset(new RefToken(key));

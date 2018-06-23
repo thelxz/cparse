@@ -195,8 +195,8 @@ struct rpnBuilder {
     std::stringstream ss;
     ss << *expr;
     ++expr;
-    while (rpnBuilder::isvarchar(*expr) || isdigit(*expr)) {
-      ss << *expr;
+    while (rpnBuilder::isvarchar(*expr) || isdigit(*expr) ) {
+          ss << *expr;
       ++expr;
     }
     if (rest) *rest = expr;
@@ -218,7 +218,6 @@ struct evaluationData {
   const opMap_t& opMap;
 
   std::unique_ptr<RefToken> left;
-  std::unique_ptr<RefToken> right;
 
   std::string op;
   opID_t opID;
