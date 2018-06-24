@@ -71,10 +71,10 @@ TEST_CASE("Boolean expressions") {
   REQUIRE_FALSE(calculator::calculate("10 == 'str'").asBool());
   REQUIRE(calculator::calculate("10 != 'str'").asBool());
 
-  REQUIRE(calculator::calculate("True")->type == BOOL);
-  REQUIRE(calculator::calculate("False")->type == BOOL);
-  REQUIRE(calculator::calculate("10 == 'str'")->type == BOOL);
-  REQUIRE(calculator::calculate("10 == 10")->type == BOOL);
+  REQUIRE(calculator::calculate("True")->type == CPARSE_BOOL);
+  REQUIRE(calculator::calculate("False")->type == CPARSE_BOOL);
+  REQUIRE(calculator::calculate("10 == 'str'")->type == CPARSE_BOOL);
+  REQUIRE(calculator::calculate("10 == 10")->type == CPARSE_BOOL);
 }
 
 TEST_CASE("String expressions") {
@@ -337,17 +337,17 @@ TEST_CASE("Tuple usage expressions", "[tuple]") {
 
   REQUIRE_NOTHROW(c.compile("'key':'value'"));
   STuple* t0 = static_cast<STuple*>(c.eval()->clone());
-  REQUIRE(t0->type == STUPLE);
+  REQUIRE(t0->type == CPARSE_STUPLE);
   REQUIRE(t0->list().size() == 2);
   delete t0;
 
   REQUIRE_NOTHROW(c.compile("1, 'key':'value', 3"));
   Tuple* t1 = static_cast<Tuple*>(c.eval()->clone());
-  REQUIRE(t1->type == TUPLE);
+  REQUIRE(t1->type == CPARSE_TUPLE);
   REQUIRE(t1->list().size() == 3);
 
   STuple* t2 = static_cast<STuple*>(t1->list()[1]->clone());
-  REQUIRE(t2->type == STUPLE);
+  REQUIRE(t2->type == CPARSE_STUPLE);
   REQUIRE(t2->list().size() == 2);
   delete t1;
   delete t2;
@@ -362,8 +362,8 @@ TEST_CASE("List and map constructors usage") {
   REQUIRE_NOTHROW(calculator::calculate("my_map = map()", vars));
   REQUIRE_NOTHROW(calculator::calculate("my_list = list()", vars));
 
-  REQUIRE(vars["my_map"]->type == MAP);
-  REQUIRE(vars["my_list"]->type == LIST);
+  REQUIRE(vars["my_map"]->type == CPARSE_MAP);
+  REQUIRE(vars["my_list"]->type == CPARSE_LIST);
   REQUIRE(calculator::calculate("my_list.len()", vars).asDouble() == 0);
 
   REQUIRE_NOTHROW(calculator::calculate("my_list = list(1,'2',None,map(),list('sub_list'))", vars));
@@ -529,7 +529,7 @@ TEST_CASE("Built-in str() function") {
   REQUIRE(calculator::calculate(" str(map) ").asString() == "[Function: map]");
 
   vars["iterator"] = packToken(new TokenList());
-  vars["iterator"]->type = IT;
+  vars["iterator"]->type = CPARSE_IT;
   REQUIRE(calculator::calculate("str(iterator)", vars).asString() == "[Iterator]");
 
   TokenMap vars;
@@ -632,7 +632,7 @@ TEST_CASE("Assignment expressions") {
   TokenMap child = vars.getChild();
   REQUIRE_NOTHROW(calculator::calculate("print = 'something else'", vars));
   REQUIRE(vars["print"].asString() == "something else");
-  REQUIRE(child["print"]->type == NONE);
+  REQUIRE(child["print"]->type == CPARSE_NONE);
 }
 
 TEST_CASE("Assignment expressions on maps") {
@@ -655,7 +655,7 @@ TEST_CASE("Assignment expressions on maps") {
   REQUIRE(calculator::calculate("10 + (a = m.a = m.m.b)", vars) == 40);
 
   REQUIRE_NOTHROW(calculator::calculate("m.m = None", vars));
-  REQUIRE(calculator::calculate("m.m", vars)->type == NONE);
+  REQUIRE(calculator::calculate("m.m", vars)->type == CPARSE_NONE);
 }
 
 TEST_CASE("Scope management") {
@@ -731,10 +731,10 @@ TEST_CASE("Parsing as slave parser") {
 // This function is for internal use only:
 TEST_CASE("operation_id() function", "[op_id]") {
   #define opID(t1, t2) Operation::build_mask(t1, t2)
-  REQUIRE((opID(NONE, NONE)) == 0x0000000100000001);
-  REQUIRE((opID(FUNC, FUNC)) == 0x0000002000000020);
-  REQUIRE((opID(FUNC, ANY_TYPE)) == 0x000000200000FFFF);
-  REQUIRE((opID(FUNC, ANY_TYPE)) == 0x000000200000FFFF);
+  REQUIRE((opID(CPARSE_NONE, CPARSE_NONE)) == 0x0000000100000001);
+  REQUIRE((opID(CPARSE_FUNC, CPARSE_FUNC)) == 0x0000002000000020);
+  REQUIRE((opID(CPARSE_FUNC, CPARSE_ANY_TYPE)) == 0x000000200000FFFF);
+  REQUIRE((opID(CPARSE_FUNC, CPARSE_ANY_TYPE)) == 0x000000200000FFFF);
 }
 
 /* * * * * Declaring adhoc operations * * * * */
@@ -812,14 +812,14 @@ struct myCalcStartup {
     opp.addRightUnary("!", 1);
 
     opMap_t& opMap = myCalc::my_config().opMap;
-    opMap.add({STR, "+", TUPLE}, &op1);
-    opMap.add({ANY_TYPE, ".", ANY_TYPE}, &op2);
-    opMap.add({NUM, "-", NUM}, &op3);
-    opMap.add({NUM, "*", NUM}, &op4);
-    opMap.add({NUM, "/", NUM}, &slash_op);
-    opMap.add({UNARY, "~", NUM}, &not_unary_op);
-    opMap.add({NUM, "~", UNARY}, &not_right_unary_op);
-    opMap.add({NUM, "!", UNARY}, &not_right_unary_op);
+    opMap.add({CPARSE_STR, "+", CPARSE_TUPLE}, &op1);
+    opMap.add({CPARSE_ANY_TYPE, ".", CPARSE_ANY_TYPE}, &op2);
+    opMap.add({CPARSE_NUM, "-", CPARSE_NUM}, &op3);
+    opMap.add({CPARSE_NUM, "*", CPARSE_NUM}, &op4);
+    opMap.add({CPARSE_NUM, "/", CPARSE_NUM}, &slash_op);
+    opMap.add({CPARSE_UNARY, "~", CPARSE_NUM}, &not_unary_op);
+    opMap.add({CPARSE_NUM, "~", CPARSE_UNARY}, &not_right_unary_op);
+    opMap.add({CPARSE_NUM, "!", CPARSE_UNARY}, &not_right_unary_op);
 
     parserMap_t& parser = myCalc::my_config().parserMap;
     parser.add('/', &slash);

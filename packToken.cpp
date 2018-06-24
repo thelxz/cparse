@@ -26,7 +26,7 @@ packToken& packToken::operator=(const packToken& t) {
 }
 
 bool packToken::operator==(const packToken& token) const {
-  if (NUM & token.base->type & base->type) {
+  if (CPARSE_NUM & token.base->type & base->type) {
     return token.asDouble() == asDouble();
   }
 
@@ -51,28 +51,28 @@ std::ostream& operator<<(std::ostream &os, const packToken& t) {
 }
 
 packToken& packToken::operator[](const std::string& key) {
-  if (base->type != MAP) {
+  if (base->type != CPARSE_MAP) {
     throw bad_cast(
       "The Token is not a map!");
   }
   return (*static_cast<TokenMap*>(base))[key];
 }
 const packToken& packToken::operator[](const std::string& key) const {
-  if (base->type != MAP) {
+  if (base->type != CPARSE_MAP) {
     throw bad_cast(
       "The Token is not a map!");
   }
   return (*static_cast<TokenMap*>(base))[key];
 }
 packToken& packToken::operator[](const char* key) {
-  if (base->type != MAP) {
+  if (base->type != CPARSE_MAP) {
     throw bad_cast(
       "The Token is not a map!");
   }
   return (*static_cast<TokenMap*>(base))[key];
 }
 const packToken& packToken::operator[](const char* key) const {
-  if (base->type != MAP) {
+  if (base->type != CPARSE_MAP) {
     throw bad_cast(
       "The Token is not a map!");
   }
@@ -81,21 +81,21 @@ const packToken& packToken::operator[](const char* key) const {
 
 bool packToken::asBool() const {
   switch (base->type) {
-    case REAL:
+    case CPARSE_REAL:
       return static_cast<Token<double>*>(base)->val != 0;
-    case INT:
+    case CPARSE_INT:
       return static_cast<Token<int64_t>*>(base)->val != 0;
-    case BOOL:
+    case CPARSE_BOOL:
       return static_cast<Token<uint8_t>*>(base)->val != 0;
-    case STR:
+    case CPARSE_STR:
       return static_cast<Token<std::string>*>(base)->val != std::string();
-    case MAP:
-    case FUNC:
+    case CPARSE_MAP:
+    case CPARSE_FUNC:
       return true;
-    case NONE:
+    case CPARSE_NONE:
       return false;
-    case TUPLE:
-    case STUPLE:
+    case CPARSE_TUPLE:
+    case CPARSE_STUPLE:
       return static_cast<Tuple*>(base)->list().size() != 0;
     default:
       throw bad_cast("Token type can not be cast to boolean!");
@@ -104,15 +104,15 @@ bool packToken::asBool() const {
 
 double packToken::asDouble() const {
   switch (base->type) {
-  case REAL:
+  case CPARSE_REAL:
     std::cout << "NOTICE: a double number!!! at asDouble()" << std::endl;
     return static_cast<Token<double>*>(base)->val;
-  case INT:
+  case CPARSE_INT:
     return static_cast<Token<int64_t>*>(base)->val;
-  case BOOL:
+  case CPARSE_BOOL:
     return static_cast<Token<uint8_t>*>(base)->val;
   default:
-    if (!(base->type & NUM)) {
+    if (!(base->type & CPARSE_NUM)) {
       throw bad_cast(
         "The Token is not a number!");
     } else {
@@ -124,15 +124,15 @@ double packToken::asDouble() const {
 
 int64_t packToken::asInt() const {
   switch (base->type) {
-  case REAL:
+  case CPARSE_REAL:
     std::cout << "NOTICE: a double number!!! at asInt()" << std::endl;
     return static_cast<Token<double>*>(base)->val;
-  case INT:
+  case CPARSE_INT:
     return static_cast<Token<int64_t>*>(base)->val;
-  case BOOL:
+  case CPARSE_BOOL:
     return static_cast<Token<uint8_t>*>(base)->val;
   default:
-    if (!(base->type & NUM)) {
+    if (!(base->type & CPARSE_NUM)) {
       throw bad_cast(
         "The Token is not a number!");
     } else {
@@ -143,7 +143,7 @@ int64_t packToken::asInt() const {
 }
 
 std::string& packToken::asString() const {
-  if (base->type != STR && base->type != VAR && base->type != OP) {
+  if (base->type != CPARSE_STR && base->type != CPARSE_VAR && base->type != CPARSE_OP) {
     throw bad_cast(
       "The Token is not a string!");
   }
@@ -151,7 +151,7 @@ std::string& packToken::asString() const {
 }
 
 TokenMap& packToken::asMap() const {
-  if (base->type != MAP) {
+  if (base->type != CPARSE_MAP) {
     throw bad_cast(
       "The Token is not a map!");
   }
@@ -159,7 +159,7 @@ TokenMap& packToken::asMap() const {
 }
 
 TokenList& packToken::asList() const {
-  if (base->type != LIST) {
+  if (base->type != CPARSE_LIST) {
     throw bad_cast(
       "The Token is not a list!");
   }
@@ -167,7 +167,7 @@ TokenList& packToken::asList() const {
 }
 
 Tuple& packToken::asTuple() const {
-  if (base->type != TUPLE) {
+  if (base->type != CPARSE_TUPLE) {
     throw bad_cast(
       "The Token is not a tuple!");
   }
@@ -175,7 +175,7 @@ Tuple& packToken::asTuple() const {
 }
 
 STuple& packToken::asSTuple() const {
-  if (base->type != STUPLE) {
+  if (base->type != CPARSE_STUPLE) {
     throw bad_cast(
       "The Token is not an special tuple!");
   }
@@ -183,7 +183,7 @@ STuple& packToken::asSTuple() const {
 }
 
 Function* packToken::asFunc() const {
-  if (base->type != FUNC) {
+  if (base->type != CPARSE_FUNC) {
     throw bad_cast(
       "The Token is not a function!");
   }
@@ -207,7 +207,7 @@ std::string packToken::str(const TokenBase* base, uint32_t nest) {
 
   if (!base) return "undefined";
 
-  if (base->type & REF) {
+  if (base->type & CPARSE_REF) {
     base = static_cast<const RefToken*>(base)->resolve();
     name = static_cast<const RefToken*>(base)->key.str();
   }
@@ -224,32 +224,32 @@ std::string packToken::str(const TokenBase* base, uint32_t nest) {
   /* * * * * Stringify the token: * * * * */
 
   switch (base->type) {
-    case NONE:
+    case CPARSE_NONE:
       return "None";
-    case UNARY:
+    case CPARSE_UNARY:
       return "UnaryToken";
-    case OP:
+    case CPARSE_OP:
       return static_cast<const Token<std::string>*>(base)->val;
-    case VAR:
+    case CPARSE_VAR:
       return static_cast<const Token<std::string>*>(base)->val;
-    case REAL:
+    case CPARSE_REAL:
       ss << static_cast<const Token<double>*>(base)->val;
       return ss.str();
-    case INT:
+    case CPARSE_INT:
       ss << static_cast<const Token<int64_t>*>(base)->val;
       return ss.str();
-    case BOOL:
+    case CPARSE_BOOL:
       boolval = static_cast<const Token<uint8_t>*>(base)->val;
       return boolval ? "True" : "False";
-    case STR:
+    case CPARSE_STR:
       return "\"" + static_cast<const Token<std::string>*>(base)->val + "\"";
-    case FUNC:
+    case CPARSE_FUNC:
       func = static_cast<const Function*>(base);
       if (func->name().size()) return "[Function: " + func->name() + "]";
       if (name.size()) return "[Function: " + name + "]";
       return "[Function]";
-    case TUPLE:
-    case STUPLE:
+    case CPARSE_TUPLE:
+    case CPARSE_STUPLE:
       if (nest == 0) return "[Tuple]";
       ss << "(";
       first = true;
@@ -269,7 +269,7 @@ std::string packToken::str(const TokenBase* base, uint32_t nest) {
         ss << ")";
       }
       return ss.str();
-    case MAP:
+    case CPARSE_MAP:
       if (nest == 0) return "[Map]";
       tmap = &(static_cast<const TokenMap*>(base)->map());
       if (tmap->size() == 0) return "{}";
@@ -280,7 +280,7 @@ std::string packToken::str(const TokenBase* base, uint32_t nest) {
       }
       ss << " }";
       return ss.str();
-    case LIST:
+    case CPARSE_LIST:
       if (nest == 0) return "[List]";
       tlist = &(static_cast<const TokenList*>(base)->list());
       if (tlist->size() == 0) return "[]";
@@ -292,7 +292,7 @@ std::string packToken::str(const TokenBase* base, uint32_t nest) {
       ss << " ]";
       return ss.str();
     default:
-      if (base->type & IT) {
+      if (base->type & CPARSE_IT) {
         return "[Iterator]";
       }
       return "unknown_type";
